@@ -4,28 +4,33 @@ import { Platform, StyleSheet, Text,
     Image, SafeAreaView } from 'react-native';
 import Drawer from 'react-native-drawer';
 import LinearGradient from 'react-native-linear-gradient';
+
+import { MenuNavigator } from './stackScreen';
+import NavigationService from '../services/navigationService';
+
+import SvgUriN from 'react-native-svg-uri';
+
 console.disableYellowBox = true;
 
 const menu = [
-    { 'title': 'Inicio', 'icon': require('../../icons/grid-1.png') },
-    { 'title': 'Analíticas', 'icon': require('../../icons/grid-2.png') },
-    { 'title': 'Viajes', 'icon': require('../../icons/grid-3.png') },
-    { 'title': 'Mapa', 'icon': require('../../icons/grid-4.png') },
-    { 'title': 'Chat','icon': require('../../icons/grid-5.png') },
-    { 'title': 'Configuraciones','icon': require('../../icons/grid-6.png') },
+    { 'title': 'Inicio', 'icon': require('../../icons/grid-1.png'), 'path': 'HomeOption' },
+    { 'title': 'Analíticas', 'icon': require('../../icons/grid-2.png'), 'path': 'StatsOption' },
+    { 'title': 'Viajes', 'icon': require('../../icons/grid-3.png') ,'path': 'TravelsOption'},
+    { 'title': 'Mapa', 'icon': require('../../icons/grid-4.png') ,'path': 'MapOption'},
+    { 'title': 'Chat','icon': require('../../icons/grid-5.png') ,'path': 'ChatOption'},
+    { 'title': 'Configuraciones','icon': require('../../icons/grid-6.png') ,'path': 'ConfigOption'},
 ]
 
 export default class menuDrawer extends Component {
 
     constructor(props) {
         super(props)
-
+        this.state = { pressStatus: 'HomeOption' };
     }
 
     renderDrawer() {
         //SlideMenu
         return (
-            
                 <View style={styles.menuContainer}>
                     <FlatList
                         style={{height:'100%' }}
@@ -33,13 +38,17 @@ export default class menuDrawer extends Component {
                         extraData={this.state}
                         renderItem={({ item, index }) => {
                             return (
-                                <TouchableOpacity style={styles.menuTitleContainer} onPress={this.closeDrawer.bind(this)}>
+                                <TouchableOpacity style={styles.menuTitleContainer} 
+                                    onPress={this.changeNav.bind(this,item.path)}>
                                     <View style={{flexDirection:'row'}}>
                                         <Image
                                             source={item.icon}
-                                            style={[styles.icon, {tintColor: 'white'}]}
+                                            style={[styles.icon, {tintColor: this.state.pressStatus == item.path? '#f1f2f6': '#ced6e0' }]}
                                             />
-                                        <Text style={styles.menuTitle} key={index}>
+                                        <Text
+                                            key={index} 
+                                            style={[styles.menuTitle, {color: this.state.pressStatus == item.path? '#f1f2f6': '#ced6e0' }]}
+                                            >
                                         {item.title}
                                         </Text>
                                     </View>
@@ -53,17 +62,25 @@ export default class menuDrawer extends Component {
     }
 
     openDrawer() {
+        // Open Menu
         this.drawer.open()
     }
 
+    changeNav(path){
+        // Change of view
+        NavigationService.navigate(path);
+        this.setState({ pressStatus: path });
+        this.drawer.close();
+    }
+
     closeDrawer() {
+        // Close Menu
         this.drawer.close()
-        // onTouchMove={this.openDrawer.bind(this)} >
     }
 
     render() {
         return (
-            <LinearGradient colors={['#007aff', '#00ff77']}> 
+            <LinearGradient colors={['#007aff','#007aff','#00ff77']} > 
             <SafeAreaView style={styles.safeAreaStyle} >
                 <View style={styles.mainContainer}>
                     <Drawer
@@ -75,7 +92,7 @@ export default class menuDrawer extends Component {
                         panOpenMask={0.3}
                         negotiatePan={true}
                         styles={drawerStyles}>
-                        {/* //Main View */}
+                         
                         <View style={styles.headerContainer}>
                             <View style={styles.menuButton}>
                                 <TouchableOpacity
@@ -83,9 +100,18 @@ export default class menuDrawer extends Component {
                                     <Text>menu</Text>
                                 </TouchableOpacity>
                             </View>
-                            <Text style={styles.headerTitle}>DRAWER</Text>
+                            <View style={styles.headerTitle}>
+                                <Image style={styles.iconTitle} source={require('../../Images/Logo3x.png')} />
+                            </View>
                             <View style={styles.menuButton} />
                         </View>
+
+                        <MenuNavigator
+                            ref={navigatorRef => {
+                                NavigationService.setTopLevelNavigator(navigatorRef);
+                            }}
+                        />
+                        
                     </Drawer>
                 </View>
                 
@@ -98,7 +124,6 @@ export default class menuDrawer extends Component {
 const drawerStyles = {
     drawer: {
         flex: 1.0,
-        //backgroundColor: '#3B5998',
     },
     main: {
         flex: 1.0,
@@ -109,11 +134,9 @@ const drawerStyles = {
 const styles = {
     mainContainer: {
         flex: 1.0,
-        //backgroundColor: 'white'
     },
     safeAreaStyle: {
         height: '100%',
-        //backgroundColor: '#3B5998',
     },
     headerContainer: {
         height: 44,
@@ -125,7 +148,6 @@ const styles = {
         flex: 1.0,
         textAlign: 'center',
         alignSelf: 'center',
-        color: 'white'
     },
     menuButton: {
         marginLeft: 8,
@@ -136,7 +158,6 @@ const styles = {
     menuContainer: {
         flex: 1.0,
         marginTop:20,
-        //backgroundColor: '#3B5998',
     },
     menuTitleContainer: {
         height: 60,
@@ -145,8 +166,7 @@ const styles = {
         flexDirection:'row',
     },
     menuTitle: {
-        color: '#ccc',
-        opacity:0.6,
+        opacity:0.7,
         marginLeft:20,
         textAlign:'left',
         fontSize: 17,
@@ -154,7 +174,13 @@ const styles = {
         justifyContent: 'center',
     },
     icon: {
-        width: 18,
-        height: 18,
+        width: 20,
+        height: 20,
       },
+    iconTitle:{
+        width: 100,
+        height: 35,
+        resizeMode: 'stretch',
+        alignSelf: 'center',
+    }
 }

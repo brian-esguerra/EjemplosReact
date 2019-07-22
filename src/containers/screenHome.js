@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
-import { View, Text } from 'react-native';
+import { Button, Text, View } from 'react-native';
 
 class ScreenHome extends Component {
     
       render() {
         return (
-          <Text>
-              Vista - Home OK
-          </Text>
+          <View>
+            <Text>
+                Vista - Home OK
+            </Text>
+          </View>
         );
       }
 }
